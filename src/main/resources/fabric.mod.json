@@ -7,6 +7,11 @@
 	"authors": [
 		"rejmi"
 	],
+	"contact": {
+		"homepage": "https://github.com/rejmi100/build-checklist",
+		"sources": "https://github.com/rejmi100/build-checklist",
+		"issues": "https://github.com/rejmi100/build-checklist/issues"
+	},
 	"license": "MIT",
 	"icon": "assets/buildchecklist/icon.png",
 	"environment": "client",
