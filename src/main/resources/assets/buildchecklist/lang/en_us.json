@@ -13,5 +13,6 @@
 	"gui.buildchecklist.title": "Build Checklist",
 	"gui.buildchecklist.search": "Search items...",
 	"gui.buildchecklist.no_results": "No items found",
-	"gui.buildchecklist.empty": "Click an item on the left to add it"
+	"gui.buildchecklist.empty": "Click an item on the left to add it",
+	"gui.buildchecklist.count": "Count"
 }

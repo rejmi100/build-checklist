@@ -1,5 +1,6 @@
 package cz.rejmi.buildchecklist.gui;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import cz.rejmi.buildchecklist.checklist.Checklist;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.Map;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -17,7 +19,7 @@ import net.minecraft.world.item.Items;
 /**
  * Screen for editing the checklist with the mouse.
  * Left: search box + grid of all items (click = +1 stack, Shift+click = +1).
- * Right: the current checklist with [−] [+] [×] per row.
+ * Right: the current checklist with [−] [+] [×] per row; clicking a count lets you type it.
  *
  * <p>The grid and the list are drawn and hit-tested by hand instead of using one Button widget per
  * item, so nothing has to be rebuilt when the list changes. Only the search box is a vanilla widget.
@@ -28,6 +30,8 @@ public class ChecklistScreen extends Screen {
 	private static final int TOP = 42;        // y where the grid and the list start
 	private static final int MARGIN = 10;
 	private static final int BUTTON = 12;     // size of the [−] [+] [×] boxes
+	private static final int COUNT_WIDTH = 40; // clickable count area / count edit box width
+	private static final int MAX_COUNT = 1_000_000;
 
 	private static final int PANEL_BG = 0xA0000000;
 	private static final int HOVER_BG = 0x40FFFFFF;
@@ -38,6 +42,8 @@ public class ChecklistScreen extends Screen {
 	private final List<Item> allItems = new ArrayList<>();
 	private List<Item> filtered = List.of();
 	private EditBox search;
+	private EditBox countBox;    // shown over a row's count while typing it
+	private Item editingItem;    // the item whose count is being typed, or null
 	private int gridScroll = 0; // in rows
 	private int listScroll = 0; // in rows
 
@@ -82,6 +88,53 @@ public class ChecklistScreen extends Screen {
 		addRenderableWidget(search);
 		setInitialFocus(search);
 		applyFilter();
+
+		countBox = new EditBox(font, 0, 0, COUNT_WIDTH, 12, Component.translatable("gui.buildchecklist.count"));
+		countBox.setMaxLength(7);
+		countBox.setVisible(false);
+		addRenderableWidget(countBox);
+		editingItem = null; // a resize rebuilds the widgets, so drop any half-typed count
+	}
+
+	private void startEditing(Item item, int count, int x, int y) {
+		editingItem = item;
+		countBox.setX(x);
+		countBox.setY(y);
+		countBox.setValue(String.valueOf(count));
+		countBox.moveCursorToEnd(false);
+		countBox.setVisible(true);
+		setFocused(countBox);
+	}
+
+	/** Applies the typed count if it is a valid number (1 – 1 000 000); anything else is ignored. */
+	private void finishEditing(boolean apply) {
+		if (editingItem == null) return;
+		if (apply) {
+			try {
+				int value = Integer.parseInt(countBox.getValue().trim());
+				if (value > 0 && value <= MAX_COUNT) checklist.set(editingItem, value);
+			} catch (NumberFormatException ignored) {
+				// not a number: keep the old count
+			}
+		}
+		editingItem = null;
+		countBox.setVisible(false);
+		setFocused(search);
+	}
+
+	@Override
+	public boolean keyPressed(KeyEvent event) {
+		if (editingItem != null) {
+			if (event.key() == InputConstants.KEY_RETURN || event.key() == InputConstants.KEY_NUMPADENTER) {
+				finishEditing(true);
+				return true;
+			}
+			if (event.key() == InputConstants.KEY_ESCAPE) {
+				finishEditing(false); // Esc closes the edit box, not the whole screen
+				return true;
+			}
+		}
+		return super.keyPressed(event);
 	}
 
 	/** Filters by the localized name or the item ID, e.g. "kámen", "stone" or "minecraft:stone". */
@@ -92,6 +145,15 @@ public class ChecklistScreen extends Screen {
 						|| BuiltInRegistries.ITEM.getKey(item).toString().contains(query))
 				.toList();
 		gridScroll = 0;
+	}
+
+	/** Dark panels go in the background layer, so the widgets (search, count box) are drawn on top of them. */
+	@Override
+	public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+		super.extractBackground(graphics, mouseX, mouseY, delta);
+		int rows = visibleRows();
+		graphics.fill(gridX() - 2, TOP - 2, gridX() + gridColumns() * CELL + 2, TOP + rows * CELL + 2, PANEL_BG);
+		graphics.fill(listX() - 2, TOP - 2, listRight() + 2, TOP + rows * ROW + 2, PANEL_BG);
 	}
 
 	@Override
@@ -105,7 +167,6 @@ public class ChecklistScreen extends Screen {
 	private void extractGrid(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
 		int cols = gridColumns();
 		int rows = visibleRows();
-		graphics.fill(gridX() - 2, TOP - 2, gridX() + cols * CELL + 2, TOP + rows * CELL + 2, PANEL_BG);
 
 		for (int i = 0; i < rows * cols; i++) {
 			int index = gridScroll * cols + i;
@@ -126,7 +187,6 @@ public class ChecklistScreen extends Screen {
 
 	private void extractList(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
 		int rows = visibleRows();
-		graphics.fill(listX() - 2, TOP - 2, listRight() + 2, TOP + rows * ROW + 2, PANEL_BG);
 
 		List<Map.Entry<Item, Integer>> entries = new ArrayList<>(checklist.entries().entrySet());
 		if (entries.isEmpty()) {
@@ -144,10 +204,15 @@ public class ChecklistScreen extends Screen {
 			String countText = String.valueOf(count);
 			int buttonsX = listRight() - 3 * (BUTTON + 2);
 			int countX = buttonsX - 6 - font.width(countText);
-			// Cut long names so they don't overlap the count.
-			String shownName = font.plainSubstrByWidth(name(item), countX - (listX() + 20) - 4);
+			int countAreaX = buttonsX - 4 - COUNT_WIDTH;
+			// Cut long names so they don't overlap the count area.
+			String shownName = font.plainSubstrByWidth(name(item), countAreaX - (listX() + 20) - 4);
 			graphics.text(font, shownName, listX() + 20, y + 5, TEXT, true);
-			graphics.text(font, countText, countX, y + 5, TEXT, true);
+			if (item != editingItem) {
+				boolean hover = inside(mouseX, mouseY, countAreaX, y + 3, COUNT_WIDTH, BUTTON);
+				if (hover) graphics.fill(countAreaX, y + 3, countAreaX + COUNT_WIDTH, y + 3 + BUTTON, HOVER_BG);
+				graphics.text(font, countText, countX, y + 5, TEXT, true);
+			}
 
 			extractButton(graphics, mouseX, mouseY, buttonsX, y + 3, "−");
 			extractButton(graphics, mouseX, mouseY, buttonsX + BUTTON + 2, y + 3, "+");
@@ -163,7 +228,11 @@ public class ChecklistScreen extends Screen {
 
 	@Override
 	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-		// Let the search box handle its own clicks (focus, cursor) first.
+		// Clicking anywhere outside the count box confirms the typed count.
+		if (editingItem != null && !countBox.isMouseOver(event.x(), event.y())) {
+			finishEditing(true);
+		}
+		// Let the widgets (search, count box) handle their own clicks first.
 		if (super.mouseClicked(event, doubleClick)) return true;
 		if (event.button() != 0) return false; // left button only
 		int mx = (int) event.x();
@@ -189,7 +258,10 @@ public class ChecklistScreen extends Screen {
 			int count = entries.get(listScroll + row).getValue();
 			int y = TOP + row * ROW + 3;
 			int step = single ? 1 : stackSize(item);
-			if (inside(mx, my, buttonsX, y, BUTTON, BUTTON)) {
+			if (inside(mx, my, buttonsX - 4 - COUNT_WIDTH, y, COUNT_WIDTH, BUTTON)) {
+				startEditing(item, count, buttonsX - 4 - COUNT_WIDTH, y);
+				return true;
+			} else if (inside(mx, my, buttonsX, y, BUTTON, BUTTON)) {
 				checklist.set(item, count - step);
 			} else if (inside(mx, my, buttonsX + BUTTON + 2, y, BUTTON, BUTTON)) {
 				checklist.set(item, count + step);
@@ -206,6 +278,7 @@ public class ChecklistScreen extends Screen {
 
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+		finishEditing(true); // the edited row may scroll away
 		int step = scrollY > 0 ? -1 : 1; // wheel up = scroll up
 		if (mouseX < width / 2.0) {
 			int maxRows = (filtered.size() + gridColumns() - 1) / gridColumns();

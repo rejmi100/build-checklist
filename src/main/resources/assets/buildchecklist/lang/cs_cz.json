@@ -13,5 +13,6 @@
 	"gui.buildchecklist.title": "Build Checklist",
 	"gui.buildchecklist.search": "Hledat item...",
 	"gui.buildchecklist.no_results": "Nic nenalezeno",
-	"gui.buildchecklist.empty": "Klikni na item vlevo a přidá se"
+	"gui.buildchecklist.empty": "Klikni na item vlevo a přidá se",
+	"gui.buildchecklist.count": "Počet"
 }
