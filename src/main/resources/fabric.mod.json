@@ -1,0 +1,24 @@
+{
+	"schemaVersion": 1,
+	"id": "buildchecklist",
+	"version": "${version}",
+	"name": "Build Checklist",
+	"description": "A HUD checklist of building materials that ticks itself off as you gather items.",
+	"authors": [
+		"rejmi"
+	],
+	"license": "MIT",
+	"icon": "assets/buildchecklist/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"cz.rejmi.buildchecklist.BuildChecklistClient"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.20.1",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
