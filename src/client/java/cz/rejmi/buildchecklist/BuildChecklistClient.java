@@ -2,6 +2,7 @@ package cz.rejmi.buildchecklist;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import cz.rejmi.buildchecklist.checklist.Checklist;
+import cz.rejmi.buildchecklist.checklist.ChecklistLists;
 import cz.rejmi.buildchecklist.command.ChecklistCommand;
 import cz.rejmi.buildchecklist.gui.ChecklistScreen;
 import cz.rejmi.buildchecklist.hud.ChecklistHud;
@@ -27,23 +28,24 @@ public class BuildChecklistClient implements ClientModInitializer {
 	public static final String MOD_ID = "buildchecklist";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-	/** The active checklist (contents are swapped per world by ChecklistStorage). */
-	public static final Checklist CHECKLIST = new Checklist();
+	/** All named lists of the current world; LISTS.active() is the list shown on the HUD. */
+	public static final ChecklistLists LISTS = new ChecklistLists(new Checklist());
 
 	@Override
 	public void onInitializeClient() {
 		// Fabric fires this event whenever the client (re)builds its command tree, e.g. on joining a world.
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, buildContext) ->
-				ChecklistCommand.register(dispatcher, buildContext, CHECKLIST));
+				ChecklistCommand.register(dispatcher, buildContext, LISTS));
 
 		// One JSON file per world/server; load on join, save on every change, forget on leave.
-		ChecklistStorage storage = new ChecklistStorage(FabricLoader.getInstance().getConfigDir().resolve(MOD_ID), CHECKLIST);
-		CHECKLIST.setOnChange(storage::save);
+		ChecklistStorage storage = new ChecklistStorage(FabricLoader.getInstance().getConfigDir().resolve(MOD_ID), LISTS);
+		LISTS.active().setOnChange(storage::save);
+		LISTS.setOnChange(storage::save);
 		// client.execute() runs on the game thread, so the HUD never reads the list while it's being swapped.
 		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> client.execute(() -> storage.onJoin(client)));
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> client.execute(storage::onDisconnect));
 
-		ChecklistHud hud = new ChecklistHud(CHECKLIST);
+		ChecklistHud hud = new ChecklistHud(LISTS);
 
 		// Default H, rebindable in Options -> Controls (Minecraft saves the choice in options.txt).
 		KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "main"));
@@ -58,7 +60,7 @@ public class BuildChecklistClient implements ClientModInitializer {
 				hud.toggleVisible();
 			}
 			while (openGuiKey.consumeClick()) {
-				client.gui.setScreen(new ChecklistScreen(CHECKLIST));
+				client.gui.setScreen(new ChecklistScreen(LISTS));
 			}
 			hud.tick(client);
 		});

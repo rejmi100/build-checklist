@@ -2,6 +2,7 @@ package cz.rejmi.buildchecklist.gui;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import cz.rejmi.buildchecklist.checklist.Checklist;
+import cz.rejmi.buildchecklist.checklist.ChecklistLists;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -19,7 +20,8 @@ import net.minecraft.world.item.Items;
 /**
  * Screen for editing the checklist with the mouse.
  * Left: search box + grid of all items (click = +1 stack, Shift+click = +1).
- * Right: the current checklist with [−] [+] [×] per row; clicking a count lets you type it.
+ * Right: list switcher [<] name [>] [+] and the active checklist with [−] [+] [×] per row;
+ * clicking a count lets you type it.
  *
  * <p>The grid and the list are drawn and hit-tested by hand instead of using one Button widget per
  * item, so nothing has to be rebuilt when the list changes. Only the search box is a vanilla widget.
@@ -32,12 +34,14 @@ public class ChecklistScreen extends Screen {
 	private static final int BUTTON = 12;     // size of the [−] [+] [×] boxes
 	private static final int COUNT_WIDTH = 40; // clickable count area / count edit box width
 	private static final int MAX_COUNT = 1_000_000;
+	private static final int HEADER_Y = 24;    // y of the list switcher row
 
 	private static final int PANEL_BG = 0xA0000000;
 	private static final int HOVER_BG = 0x40FFFFFF;
 	private static final int TEXT = 0xFFFFFFFF;
 	private static final int TEXT_DIM = 0xFFAAAAAA;
 
+	private final ChecklistLists lists;
 	private final Checklist checklist;
 	private final List<Item> allItems = new ArrayList<>();
 	private List<Item> filtered = List.of();
@@ -47,9 +51,10 @@ public class ChecklistScreen extends Screen {
 	private int gridScroll = 0; // in rows
 	private int listScroll = 0; // in rows
 
-	public ChecklistScreen(Checklist checklist) {
+	public ChecklistScreen(ChecklistLists lists) {
 		super(Component.translatable("gui.buildchecklist.title"));
-		this.checklist = checklist;
+		this.lists = lists;
+		this.checklist = lists.active(); // same object after switching, only its contents change
 		for (Item item : BuiltInRegistries.ITEM) {
 			if (item != Items.AIR) allItems.add(item);
 		}
@@ -160,6 +165,7 @@ public class ChecklistScreen extends Screen {
 	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
 		super.extractRenderState(graphics, mouseX, mouseY, delta); // background + search box
 		graphics.text(font, title, listX(), 8, TEXT, true);
+		extractHeader(graphics, mouseX, mouseY);
 		extractGrid(graphics, mouseX, mouseY);
 		extractList(graphics, mouseX, mouseY);
 	}
@@ -220,6 +226,20 @@ public class ChecklistScreen extends Screen {
 		}
 	}
 
+	/** List switcher: [<] name [>] [+]. */
+	private void extractHeader(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+		int nextX = listRight() - 2 * BUTTON - 2;
+		extractButton(graphics, mouseX, mouseY, listX(), HEADER_Y, "<");
+		extractButton(graphics, mouseX, mouseY, nextX, HEADER_Y, ">");
+		extractButton(graphics, mouseX, mouseY, listRight() - BUTTON, HEADER_Y, "+");
+		int nameLeft = listX() + BUTTON + 4;
+		String name = font.plainSubstrByWidth(lists.activeName(), nextX - 4 - nameLeft);
+		graphics.text(font, name, nameLeft + (nextX - 4 - nameLeft - font.width(name)) / 2, HEADER_Y + 2, 0xFFFFAA00, true);
+		if (inside(mouseX, mouseY, listRight() - BUTTON, HEADER_Y, BUTTON, BUTTON)) {
+			graphics.setTooltipForNextFrame(font, Component.translatable("gui.buildchecklist.new_list"), mouseX, mouseY);
+		}
+	}
+
 	private void extractButton(GuiGraphicsExtractor graphics, int mouseX, int mouseY, int x, int y, String label) {
 		boolean hover = inside(mouseX, mouseY, x, y, BUTTON, BUTTON);
 		graphics.fill(x, y, x + BUTTON, y + BUTTON, hover ? 0xFF707070 : 0xFF404040);
@@ -238,6 +258,21 @@ public class ChecklistScreen extends Screen {
 		int mx = (int) event.x();
 		int my = (int) event.y();
 		boolean single = event.hasShiftDown(); // Shift = change by 1 instead of a whole stack
+
+		// List switcher.
+		if (inside(mx, my, listX(), HEADER_Y, BUTTON, BUTTON)) {
+			switchList(-1);
+			return true;
+		}
+		if (inside(mx, my, listRight() - 2 * BUTTON - 2, HEADER_Y, BUTTON, BUTTON)) {
+			switchList(1);
+			return true;
+		}
+		if (inside(mx, my, listRight() - BUTTON, HEADER_Y, BUTTON, BUTTON)) {
+			lists.create(lists.nextFreeName());
+			listScroll = 0;
+			return true;
+		}
 
 		// Grid: add the clicked item.
 		int cols = gridColumns();
@@ -288,6 +323,11 @@ public class ChecklistScreen extends Screen {
 			clampListScroll();
 		}
 		return true;
+	}
+
+	private void switchList(int direction) {
+		lists.cycle(direction);
+		listScroll = 0;
 	}
 
 	/** Keeps the list scroll valid after rows were removed or the window was resized. */

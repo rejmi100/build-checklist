@@ -4,7 +4,7 @@
 	"command.buildchecklist.not_on_list": "%s není v seznamu",
 	"command.buildchecklist.empty_hand": "Nedržíš v ruce žádný item",
 	"command.buildchecklist.cleared": "Seznam vymazán",
-	"command.buildchecklist.list_header": "Seznam materiálu:",
+	"command.buildchecklist.list_header": "Seznam materiálu „%s“:",
 	"command.buildchecklist.list_empty": "Seznam je prázdný",
 	"hud.buildchecklist.complete": "Checklist hotový!",
 	"key.category.buildchecklist.main": "Build Checklist",
@@ -14,5 +14,13 @@
 	"gui.buildchecklist.search": "Hledat item...",
 	"gui.buildchecklist.no_results": "Nic nenalezeno",
 	"gui.buildchecklist.empty": "Klikni na item vlevo a přidá se",
-	"gui.buildchecklist.count": "Počet"
+	"gui.buildchecklist.count": "Počet",
+	"command.buildchecklist.lists_header": "Seznamy:",
+	"command.buildchecklist.list_created": "Vytvořen seznam „%s“ a přepnuto na něj",
+	"command.buildchecklist.list_exists": "Seznam „%s“ už existuje",
+	"command.buildchecklist.list_unknown": "Seznam „%s“ neexistuje",
+	"command.buildchecklist.list_switched": "Přepnuto na seznam „%s“",
+	"command.buildchecklist.list_deleted": "Seznam „%s“ smazán, aktivní je teď „%s“",
+	"command.buildchecklist.list_last": "Poslední seznam nejde smazat, použij /checklist clear",
+	"gui.buildchecklist.new_list": "Nový seznam (mazání přes /checklist delete)"
 }

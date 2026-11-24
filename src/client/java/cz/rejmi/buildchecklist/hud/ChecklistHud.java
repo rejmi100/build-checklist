@@ -1,6 +1,7 @@
 package cz.rejmi.buildchecklist.hud;
 
 import cz.rejmi.buildchecklist.checklist.Checklist;
+import cz.rejmi.buildchecklist.checklist.ChecklistLists;
 import cz.rejmi.buildchecklist.checklist.InventoryCounter;
 import java.util.Map;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
@@ -28,14 +29,19 @@ public class ChecklistHud implements HudElement {
 	private static final int COLOR_DONE = 0xFF55FF55;
 	private static final int BACKGROUND = 0x80000000;
 
+	private static final int TITLE_HEIGHT = 12;
+	private static final int COLOR_TITLE = 0xFFFFAA00;
+
+	private final ChecklistLists lists;
 	private final Checklist checklist;
 	private Map<Item, Integer> counts = Map.of();
 	private int ticksUntilRecount = 0;
 	private boolean wasComplete = false;
 	private boolean visible = true;
 
-	public ChecklistHud(Checklist checklist) {
-		this.checklist = checklist;
+	public ChecklistHud(ChecklistLists lists) {
+		this.lists = lists;
+		this.checklist = lists.active();
 	}
 
 	public void toggleVisible() {
@@ -65,15 +71,22 @@ public class ChecklistHud implements HudElement {
 		}
 		Font font = Minecraft.getInstance().font;
 
+		// The list name is only worth showing once there is more than one list.
+		Component title = lists.names().size() > 1 ? Component.literal(lists.activeName()) : null;
+
 		// Measure the widest row first so the background fits the text.
-		int width = 0;
+		int width = title != null ? font.width(title) - 20 : 0;
 		for (Map.Entry<Item, Integer> entry : checklist.entries().entrySet()) {
 			width = Math.max(width, font.width(rowText(entry.getKey(), entry.getValue())));
 		}
-		int height = checklist.entries().size() * ROW_HEIGHT;
+		int height = checklist.entries().size() * ROW_HEIGHT + (title != null ? TITLE_HEIGHT : 0);
 		graphics.fill(X - PADDING, Y - PADDING, X + 20 + width + PADDING, Y + height + PADDING - 2, BACKGROUND);
 
 		int y = Y;
+		if (title != null) {
+			graphics.text(font, title, X, y + 1, COLOR_TITLE, true);
+			y += TITLE_HEIGHT;
+		}
 		for (Map.Entry<Item, Integer> entry : checklist.entries().entrySet()) {
 			Item item = entry.getKey();
 			int required = entry.getValue();

@@ -4,7 +4,7 @@
 	"command.buildchecklist.not_on_list": "%s is not on the checklist",
 	"command.buildchecklist.empty_hand": "You are not holding any item",
 	"command.buildchecklist.cleared": "Checklist cleared",
-	"command.buildchecklist.list_header": "Build checklist:",
+	"command.buildchecklist.list_header": "Build checklist \"%s\":",
 	"command.buildchecklist.list_empty": "The checklist is empty",
 	"hud.buildchecklist.complete": "Checklist complete!",
 	"key.category.buildchecklist.main": "Build Checklist",
@@ -14,5 +14,13 @@
 	"gui.buildchecklist.search": "Search items...",
 	"gui.buildchecklist.no_results": "No items found",
 	"gui.buildchecklist.empty": "Click an item on the left to add it",
-	"gui.buildchecklist.count": "Count"
+	"gui.buildchecklist.count": "Count",
+	"command.buildchecklist.lists_header": "Checklists:",
+	"command.buildchecklist.list_created": "Created checklist \"%s\" and switched to it",
+	"command.buildchecklist.list_exists": "Checklist \"%s\" already exists",
+	"command.buildchecklist.list_unknown": "There is no checklist \"%s\"",
+	"command.buildchecklist.list_switched": "Switched to checklist \"%s\"",
+	"command.buildchecklist.list_deleted": "Deleted checklist \"%s\", active is now \"%s\"",
+	"command.buildchecklist.list_last": "The last checklist can't be deleted, use /checklist clear instead",
+	"gui.buildchecklist.new_list": "New checklist (delete with /checklist delete)"
 }
