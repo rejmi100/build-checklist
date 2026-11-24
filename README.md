@@ -1,0 +1,71 @@
+# Build Checklist
+
+A client-side Fabric mod that keeps a list of the materials you need for a build and shows it on your HUD.
+Items tick themselves off as you collect them, so you always know what is still missing.
+
+Because it is purely client-side, it works in singleplayer **and on vanilla multiplayer servers**. The server never needs the mod.
+
+<!-- Screenshots: replace the placeholders below -->
+![HUD overview](docs/screenshot-hud.png)
+![Checklist complete](docs/screenshot-complete.png)
+
+## Features
+
+- Material checklist on the HUD (top-left corner) with item icon, name and `have / need` (e.g. `23/64`)
+- Color coding: **red** = missing, **yellow** = partially collected, **green + ✔** = done
+- "Checklist complete!" message when the last item is collected
+- Counts items across the whole inventory, including armor and offhand slots (recounted twice per second, not every frame)
+- Toggle the HUD with a key (default **H**, rebindable in *Options → Controls*)
+- The list is saved automatically, **separately for every world and server**
+- English and Czech translations
+
+## Commands
+
+All commands are client-side (`/checklist` never reaches the server).
+
+| Command | Description |
+|---|---|
+| `/checklist add <item> <count>` | Add an item (with item ID autocomplete). Adding the same item again sums the counts. |
+| `/checklist addhand <count>` | Add the item in your main hand. |
+| `/checklist remove <item>` | Remove an item from the list. |
+| `/checklist clear` | Remove everything. |
+| `/checklist list` | Print the list to chat. |
+
+Example:
+
+```
+/checklist add minecraft:stone 64
+/checklist add glass 32
+```
+
+## Installation
+
+1. Install [Fabric Loader](https://fabricmc.net/use/) for **Minecraft 26.3**.
+2. Download [Fabric API](https://modrinth.com/mod/fabric-api) and put it in your `mods` folder.
+3. Put `build-checklist-<version>.jar` in your `mods` folder.
+
+Requirements: Minecraft 26.3, Fabric Loader ≥ 0.20.1, Fabric API, Java 25+.
+
+## Where is the list stored?
+
+`.minecraft/config/buildchecklist/`, one JSON file per world (`sp_<world folder>.json`) or server (`mp_<server address>.json`).
+If a file can't be read, it is renamed to `*.json.broken` instead of being overwritten.
+
+## Building from source
+
+```bash
+./gradlew build      # the jar ends up in build/libs/
+./gradlew runClient  # start a development client with the mod
+```
+
+## Planned
+
+- GUI screen for editing the list
+- Multiple named lists
+- Counting items in opened chests and shulker boxes
+- Importing materials from Litematica schematics
+- Configurable HUD position and size (Mod Menu)
+
+## License
+
+[MIT](LICENSE)
