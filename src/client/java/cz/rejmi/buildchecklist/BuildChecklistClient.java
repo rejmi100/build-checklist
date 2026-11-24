@@ -4,12 +4,15 @@ import com.mojang.blaze3d.platform.InputConstants;
 import cz.rejmi.buildchecklist.checklist.Checklist;
 import cz.rejmi.buildchecklist.command.ChecklistCommand;
 import cz.rejmi.buildchecklist.hud.ChecklistHud;
+import cz.rejmi.buildchecklist.storage.ChecklistStorage;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
@@ -23,7 +26,7 @@ public class BuildChecklistClient implements ClientModInitializer {
 	public static final String MOD_ID = "buildchecklist";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-	/** The active checklist (in memory for now; saving per world comes later). */
+	/** The active checklist (contents are swapped per world by ChecklistStorage). */
 	public static final Checklist CHECKLIST = new Checklist();
 
 	@Override
@@ -31,6 +34,13 @@ public class BuildChecklistClient implements ClientModInitializer {
 		// Fabric fires this event whenever the client (re)builds its command tree, e.g. on joining a world.
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, buildContext) ->
 				ChecklistCommand.register(dispatcher, buildContext, CHECKLIST));
+
+		// One JSON file per world/server; load on join, save on every change, forget on leave.
+		ChecklistStorage storage = new ChecklistStorage(FabricLoader.getInstance().getConfigDir().resolve(MOD_ID), CHECKLIST);
+		CHECKLIST.setOnChange(storage::save);
+		// client.execute() runs on the game thread, so the HUD never reads the list while it's being swapped.
+		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> client.execute(() -> storage.onJoin(client)));
+		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> client.execute(storage::onDisconnect));
 
 		ChecklistHud hud = new ChecklistHud(CHECKLIST);
 

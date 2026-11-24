@@ -13,19 +13,37 @@ import net.minecraft.world.item.Item;
 public class Checklist {
 	// LinkedHashMap keeps insertion order, so the HUD shows items in the order they were added.
 	private final Map<Item, Integer> required = new LinkedHashMap<>();
+	private Runnable onChange = () -> {
+	};
+
+	/** Called after every user change (add/remove/clear), e.g. to save the list. */
+	public void setOnChange(Runnable onChange) {
+		this.onChange = onChange;
+	}
 
 	/** Adds {@code count} to the item's required amount (adding the same item twice sums up). Returns the new total. */
 	public int add(Item item, int count) {
-		return required.merge(item, count, Integer::sum);
+		int total = required.merge(item, count, Integer::sum);
+		onChange.run();
+		return total;
 	}
 
 	/** Returns true if the item was on the list. */
 	public boolean remove(Item item) {
-		return required.remove(item) != null;
+		boolean removed = required.remove(item) != null;
+		if (removed) onChange.run();
+		return removed;
 	}
 
 	public void clear() {
 		required.clear();
+		onChange.run();
+	}
+
+	/** Replaces the whole list, e.g. after loading from disk. Does not fire onChange. */
+	public void replaceWith(Map<Item, Integer> entries) {
+		required.clear();
+		required.putAll(entries);
 	}
 
 	public boolean isEmpty() {
