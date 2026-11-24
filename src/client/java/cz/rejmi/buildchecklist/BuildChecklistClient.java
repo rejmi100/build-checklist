@@ -1,13 +1,16 @@
 package cz.rejmi.buildchecklist;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import cz.rejmi.buildchecklist.checklist.Checklist;
 import cz.rejmi.buildchecklist.command.ChecklistCommand;
 import cz.rejmi.buildchecklist.hud.ChecklistHud;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +33,19 @@ public class BuildChecklistClient implements ClientModInitializer {
 				ChecklistCommand.register(dispatcher, buildContext, CHECKLIST));
 
 		ChecklistHud hud = new ChecklistHud(CHECKLIST);
-		ClientTickEvents.END_CLIENT_TICK.register(hud::tick);
+
+		// Default H, rebindable in Options -> Controls (Minecraft saves the choice in options.txt).
+		KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "main"));
+		KeyMapping toggleKey = KeyMappingHelper.registerKeyMapping(
+				new KeyMapping("key.buildchecklist.toggle_hud", InputConstants.KEY_H, category));
+
+		ClientTickEvents.END_CLIENT_TICK.register(client -> {
+			// consumeClick() returns true once per press, so a held key doesn't flicker the HUD.
+			while (toggleKey.consumeClick()) {
+				hud.toggleVisible();
+			}
+			hud.tick(client);
+		});
 		// Draw just before the chat, so open chat stays on top of our overlay.
 		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, Identifier.fromNamespaceAndPath(MOD_ID, "checklist"), hud);
 

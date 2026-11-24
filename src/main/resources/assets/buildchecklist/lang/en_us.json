@@ -6,5 +6,7 @@
 	"command.buildchecklist.cleared": "Checklist cleared",
 	"command.buildchecklist.list_header": "Build checklist:",
 	"command.buildchecklist.list_empty": "The checklist is empty",
-	"hud.buildchecklist.complete": "Checklist complete!"
+	"hud.buildchecklist.complete": "Checklist complete!",
+	"key.category.buildchecklist.main": "Build Checklist",
+	"key.buildchecklist.toggle_hud": "Toggle checklist HUD"
 }

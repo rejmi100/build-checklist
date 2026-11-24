@@ -6,5 +6,7 @@
 	"command.buildchecklist.cleared": "Seznam vymazán",
 	"command.buildchecklist.list_header": "Seznam materiálu:",
 	"command.buildchecklist.list_empty": "Seznam je prázdný",
-	"hud.buildchecklist.complete": "Checklist hotový!"
+	"hud.buildchecklist.complete": "Checklist hotový!",
+	"key.category.buildchecklist.main": "Build Checklist",
+	"key.buildchecklist.toggle_hud": "Zobrazit/skrýt checklist"
 }

@@ -32,9 +32,14 @@ public class ChecklistHud implements HudElement {
 	private Map<Item, Integer> counts = Map.of();
 	private int ticksUntilRecount = 0;
 	private boolean wasComplete = false;
+	private boolean visible = true;
 
 	public ChecklistHud(Checklist checklist) {
 		this.checklist = checklist;
+	}
+
+	public void toggleVisible() {
+		visible = !visible;
 	}
 
 	/** Called at the end of every client tick (20× per second). */
@@ -55,7 +60,7 @@ public class ChecklistHud implements HudElement {
 
 	@Override
 	public void extractRenderState(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker) {
-		if (checklist.isEmpty()) {
+		if (!visible || checklist.isEmpty()) {
 			return;
 		}
 		Font font = Minecraft.getInstance().font;
