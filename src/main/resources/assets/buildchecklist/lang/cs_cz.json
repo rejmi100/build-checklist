@@ -5,5 +5,6 @@
 	"command.buildchecklist.empty_hand": "Nedržíš v ruce žádný item",
 	"command.buildchecklist.cleared": "Seznam vymazán",
 	"command.buildchecklist.list_header": "Seznam materiálu:",
-	"command.buildchecklist.list_empty": "Seznam je prázdný"
+	"command.buildchecklist.list_empty": "Seznam je prázdný",
+	"hud.buildchecklist.complete": "Checklist hotový!"
 }
