@@ -8,5 +8,10 @@
 	"command.buildchecklist.list_empty": "The checklist is empty",
 	"hud.buildchecklist.complete": "Checklist complete!",
 	"key.category.buildchecklist.main": "Build Checklist",
-	"key.buildchecklist.toggle_hud": "Toggle checklist HUD"
+	"key.buildchecklist.toggle_hud": "Toggle checklist HUD",
+	"key.buildchecklist.open_gui": "Open checklist editor",
+	"gui.buildchecklist.title": "Build Checklist",
+	"gui.buildchecklist.search": "Search items...",
+	"gui.buildchecklist.no_results": "No items found",
+	"gui.buildchecklist.empty": "Click an item on the left to add it"
 }

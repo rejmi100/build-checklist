@@ -8,5 +8,10 @@
 	"command.buildchecklist.list_empty": "Seznam je prázdný",
 	"hud.buildchecklist.complete": "Checklist hotový!",
 	"key.category.buildchecklist.main": "Build Checklist",
-	"key.buildchecklist.toggle_hud": "Zobrazit/skrýt checklist"
+	"key.buildchecklist.toggle_hud": "Zobrazit/skrýt checklist",
+	"key.buildchecklist.open_gui": "Otevřít úpravu checklistu",
+	"gui.buildchecklist.title": "Build Checklist",
+	"gui.buildchecklist.search": "Hledat item...",
+	"gui.buildchecklist.no_results": "Nic nenalezeno",
+	"gui.buildchecklist.empty": "Klikni na item vlevo a přidá se"
 }

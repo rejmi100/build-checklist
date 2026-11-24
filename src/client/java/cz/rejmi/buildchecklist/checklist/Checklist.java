@@ -28,6 +28,16 @@ public class Checklist {
 		return total;
 	}
 
+	/** Sets the exact required amount; 0 or less removes the item. */
+	public void set(Item item, int count) {
+		if (count <= 0) {
+			required.remove(item);
+		} else {
+			required.put(item, count);
+		}
+		onChange.run();
+	}
+
 	/** Returns true if the item was on the list. */
 	public boolean remove(Item item) {
 		boolean removed = required.remove(item) != null;

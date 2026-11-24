@@ -3,6 +3,7 @@ package cz.rejmi.buildchecklist;
 import com.mojang.blaze3d.platform.InputConstants;
 import cz.rejmi.buildchecklist.checklist.Checklist;
 import cz.rejmi.buildchecklist.command.ChecklistCommand;
+import cz.rejmi.buildchecklist.gui.ChecklistScreen;
 import cz.rejmi.buildchecklist.hud.ChecklistHud;
 import cz.rejmi.buildchecklist.storage.ChecklistStorage;
 import net.fabricmc.api.ClientModInitializer;
@@ -48,11 +49,16 @@ public class BuildChecklistClient implements ClientModInitializer {
 		KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "main"));
 		KeyMapping toggleKey = KeyMappingHelper.registerKeyMapping(
 				new KeyMapping("key.buildchecklist.toggle_hud", InputConstants.KEY_H, category));
+		KeyMapping openGuiKey = KeyMappingHelper.registerKeyMapping(
+				new KeyMapping("key.buildchecklist.open_gui", InputConstants.KEY_G, category));
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			// consumeClick() returns true once per press, so a held key doesn't flicker the HUD.
 			while (toggleKey.consumeClick()) {
 				hud.toggleVisible();
+			}
+			while (openGuiKey.consumeClick()) {
+				client.gui.setScreen(new ChecklistScreen(CHECKLIST));
 			}
 			hud.tick(client);
 		});

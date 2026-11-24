@@ -16,8 +16,21 @@ Because it is purely client-side, it works in singleplayer **and on vanilla mult
 - "Checklist complete!" message when the last item is collected
 - Counts items across the whole inventory, including armor and offhand slots (recounted twice per second, not every frame)
 - Toggle the HUD with a key (default **H**, rebindable in *Options → Controls*)
+- Checklist editor screen (default key **G**): search all items and click to add them, no typing in chat needed
 - The list is saved automatically, **separately for every world and server**
 - English and Czech translations
+
+## Checklist editor (GUI)
+
+Press **G** (rebindable in *Options → Controls*) to open the editor.
+
+- **Left:** search box and a grid of all items. Search by name (in your game language) or by ID (`stone`).
+  - Click an item: add one stack (64, or 16 / 1 for items that stack less)
+  - Shift + click: add 1
+- **Right:** your current checklist.
+  - `[+]` / `[−]`: change the count by one stack (Shift: by 1). Reaching 0 removes the item.
+  - `[×]`: remove the item
+- Mouse wheel scrolls the side the cursor is on.
 
 ## Commands
 
@@ -60,7 +73,6 @@ If a file can't be read, it is renamed to `*.json.broken` instead of being overw
 
 ## Planned
 
-- GUI screen for editing the list
 - Multiple named lists
 - Counting items in opened chests and shulker boxes
 - Importing materials from Litematica schematics
