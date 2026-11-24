@@ -48,7 +48,7 @@ public class ChecklistHud implements HudElement {
 			return;
 		}
 		ticksUntilRecount = RECOUNT_INTERVAL_TICKS;
-		counts = InventoryCounter.count(client.player.getInventory());
+		counts = InventoryCounter.count(client.player);
 
 		// Announce completion once, at the moment the last item gets collected.
 		boolean complete = isComplete();
