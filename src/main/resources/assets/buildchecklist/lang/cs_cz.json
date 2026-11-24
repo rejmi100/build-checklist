@@ -1,2 +1,9 @@
 {
+	"command.buildchecklist.added": "Přidáno %s× %s do seznamu (celkem %s)",
+	"command.buildchecklist.removed": "%s odebráno ze seznamu",
+	"command.buildchecklist.not_on_list": "%s není v seznamu",
+	"command.buildchecklist.empty_hand": "Nedržíš v ruce žádný item",
+	"command.buildchecklist.cleared": "Seznam vymazán",
+	"command.buildchecklist.list_header": "Seznam materiálu:",
+	"command.buildchecklist.list_empty": "Seznam je prázdný"
 }

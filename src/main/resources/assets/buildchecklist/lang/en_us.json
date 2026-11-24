@@ -1,2 +1,9 @@
 {
+	"command.buildchecklist.added": "Added %s× %s to the checklist (total %s)",
+	"command.buildchecklist.removed": "Removed %s from the checklist",
+	"command.buildchecklist.not_on_list": "%s is not on the checklist",
+	"command.buildchecklist.empty_hand": "You are not holding any item",
+	"command.buildchecklist.cleared": "Checklist cleared",
+	"command.buildchecklist.list_header": "Build checklist:",
+	"command.buildchecklist.list_empty": "The checklist is empty"
 }
